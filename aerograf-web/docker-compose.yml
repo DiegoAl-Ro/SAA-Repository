@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # Servicio Backend (Node.js + Express + SQLite3)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aerograff-backend
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persistencia de la base de datos SQLite fuera del contenedor
+      - ./backend/aerograff.db:/app/aerograff.db
+    networks:
+      - aerograff-network
+    restart: unless-stopped
+
+  # Servicio Frontend (Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aerograff-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - aerograff-network
+    restart: unless-stopped
+
+networks:
+  aerograff-network:
+    driver: bridge

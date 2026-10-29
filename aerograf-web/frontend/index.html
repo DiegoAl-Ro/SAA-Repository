@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroGraff AI | Arte Urbano & Publicidad con Drones Autonomous</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="logo">AERO<span>GRAFF</span> AI</div>
+    <nav>
+      <a href="#hero">Inicio</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#proyectos">Gestor CRUD</a>
+    </nav>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section id="hero" class="hero-section">
+    <div class="hero-content">
+      <h1>EL FUTURO DEL ARTE URBANO ES AUTÓNOMO</h1>
+      <p>Transformamos fachadas masivas y espacios urbanos en lienzos dinámicos mediante enjambres de drones guiados por inteligencia artificial.</p>
+      <a href="#proyectos" class="btn-primary">Gestionar Proyectos</a>
+    </div>
+  </section>
+
+  <!-- SERVICIOS -->
+  <section id="servicios" class="services-section">
+    <h2>NUESTRAS CAPACIDADES</h2>
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Muralismo de Alta Precision</h3>
+        <p>Pintura con micro-aspersión de alta precisión sobre edificios de hasta 100 metros de altura.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3>Planificación por IA</h3>
+        <p>Algoritmos de visión por computador que traducen diseños digitales a trayectorias de vuelo optimizadas.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>Publicidad Efímera & Sostenible</h3>
+        <p>Campañas de gran impacto visual utilizando pinturas biodegradables o proyecciones nocturnas dinámicas.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN CRUD DE PROYECTOS -->
+  <section id="proyectos" class="crud-section">
+    <h2>PANEL DE CONTROL DE PROYECTOS</h2>
+    
+    <div class="crud-container">
+      <!-- Formulario para Crear / Editar -->
+      <div class="form-card">
+        <h3 id="form-title">Registrar Nuevo Proyecto</h3>
+        <form id="proyecto-form">
+          <input type="hidden" id="proyecto-id">
+
+          <div class="form-group">
+            <label for="titulo">Título del Proyecto</label>
+            <input type="text" id="titulo" placeholder="Ej. Mural Cyberpunk Gran Vía" required>
+          </div>
+
+          <div class="form-group">
+            <label for="cliente">Cliente</label>
+            <input type="text" id="cliente" placeholder="Ej. CyberCorp Ltd." required>
+          </div>
+
+          <div class="form-group">
+            <label for="ubicacion">Ubicación</label>
+            <input type="text" id="ubicacion" placeholder="Ej. Madrid, España" required>
+          </div>
+
+          <div class="form-group">
+            <label for="estado">Estado</label>
+            <select id="estado">
+              <option value="Planificación">Planificación</option>
+              <option value="En Progreso">En Progreso</option>
+              <option value="Completado">Completado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="presupuesto">Presupuesto (€)</label>
+            <input type="number" id="presupuesto" placeholder="15000" step="0.01" required>
+          </div>
+
+          <div class="form-buttons">
+            <button type="submit" id="btn-submit" class="btn-submit">Guardar Proyecto</button>
+            <button type="button" id="btn-cancel" class="btn-cancel hidden">Cancelar Edición</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tabla de Proyectos -->
+      <div class="table-card">
+        <h3>Murales Registrados</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Cliente</th>
+                <th>Ubicación</th>
+                <th>Estado</th>
+                <th>Presupuesto</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-proyectos-body">
+              <!-- Se puebla dinámicamente con JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2026 AeroGraff AI — Innovación y Arte Autónomo con Drones</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
