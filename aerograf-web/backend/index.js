@@ -20,37 +20,38 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
-// Crear tabla 'proyectos' si no existe
+// Crear tabla 'presupuestos' si no existe
 db.serialize(() => {
   db.run(`
-    CREATE TABLE IF NOT EXISTS proyectos (
+    CREATE TABLE IF NOT EXISTS presupuestos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      titulo TEXT NOT NULL,
       cliente TEXT NOT NULL,
-      ubicacion TEXT NOT NULL,
-      estado TEXT CHECK(estado IN ('Planificación', 'En Progreso', 'Completado', 'Cancelado')) DEFAULT 'Planificación',
-      presupuesto REAL NOT NULL,
-      creado_en DATETIME DEFAULT CURRENT_TIMESTAMP
+      superficie_m2 REAL NOT NULL,
+      altura_m REAL NOT NULL,
+      tipo_mural TEXT NOT NULL,
+      fecha_estimada DATETIME NOT NULL,
+      coste_total REAL NOT NULL
     )
   `, (err) => {
     if (err) {
-      console.error('Error al crear la tabla proyectos:', err.message);
+      console.error('Error al crear la tabla presupuestos:', err.message);
     } else {
-      console.log('Tabla "proyectos" verificada/creada correctamente.');
+      console.log('Tabla "presupuestos" verificada/creada correctamente.');
     }
   });
 });
 
-// RUTA DE PRUEBA / HEALTHCHECK
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'AeroGraff AI Backend API' });
-});
+// Helper: Obtener fecha/hora actual en zona Europa/Madrid usando zona horaria local
+function obtenerFechaMadrid() {
+  const ahora = new Date();
+  // Obtener la fecha en zona Europa/Madrid usando toLocaleString
+  return ahora.toLocaleString('sv-SE', { timeZone: 'Europe/Madrid' }).replace(' ', 'T');
+}
 
-// --- RUTAS DEL CRUD DE PROYECTOS DE MURALES ---
-
-// 1. OBTENER TODOS LOS PROYECTOS (READ ALL)
-app.get('/api/proyectos', (req, res) => {
-  const sql = 'SELECT * FROM proyectos ORDER BY id DESC';
+// --- RUTAS REST PARA PRESUPUESTOS ---
+// 1. OBTENER TODOS LOS PRESUPUESTOS (READ ALL)
+app.get('/api/presupuestos', (req, res) => {
+  const sql = 'SELECT * FROM presupuestos ORDER BY id DESC';
   db.all(sql, [], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
@@ -59,98 +60,56 @@ app.get('/api/proyectos', (req, res) => {
   });
 });
 
-// 2. OBTENER UN PROYECTO POR ID (READ ONE)
-app.get('/api/proyectos/:id', (req, res) => {
-  const sql = 'SELECT * FROM proyectos WHERE id = ?';
-  db.get(sql, [req.params.id], (err, row) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (!row) {
-      return res.status(404).json({ error: 'Proyecto no encontrado' });
-    }
-    res.json({ data: row });
-  });
-});
+// 2. CREAR UN NUEVO PRESUPUESTO (CREATE)
+app.post('/api/presupuestos', (req, res) => {
+  const { cliente, superficie_m2, altura_m, tipo_mural, fecha_estimada, coste_total } = req.body;
 
-// 3. CREAR UN NUEVO PROYECTO (CREATE)
-app.post('/api/proyectos', (req, res) => {
-  const { titulo, cliente, ubicacion, estado, presupuesto } = req.body;
-
-  if (!titulo || !cliente || !ubicacion || presupuesto === undefined) {
+  // Validación básica
+  if (!cliente || !superficie_m2 || !altura_m || !tipo_mural || !fecha_estimada || coste_total === undefined) {
     return res.status(400).json({
-      error: 'Por favor proporciona los campos obligatorios: titulo, cliente, ubicacion y presupuesto.'
+      error: 'Por favor proporciona todos los campos obligatorios: cliente, superficie_m2, altura_m, tipo_mural, fecha_estimada y coste_total.'
     });
   }
 
+  // Validar que superficie_m2 y altura_m sean positivos
+  if (superficie_m2 <= 0 || altura_m <= 0) {
+    return res.status(400).json({
+      error: 'La superficie y altura deben ser valores positivos.'
+    });
+  }
+
+  // Validar que fecha_estimada sea una fecha válida
+  const fecha = new Date(fecha_estimada);
+  if (isNaN(fecha.getTime())) {
+    return res.status(400).json({
+      error: 'La fecha estimada debe ser una fecha válida.'
+    });
+  }
+
+  // Usar fecha en formato ISO con zona Europa/Madrid
+  const fechaFormateada = fecha_estimada;
+
   const sql = `
-    INSERT INTO proyectos (titulo, cliente, ubicacion, estado, presupuesto)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO presupuestos (cliente, superficie_m2, altura_m, tipo_mural, fecha_estimada, coste_total)
+    VALUES (?, ?, ?, ?, ?, ?)
   `;
-  const params = [titulo, cliente, ubicacion, estado || 'Planificación', presupuesto];
+  const params = [cliente, superficie_m2, altura_m, tipo_mural, fechaFormateada, coste_total];
 
   db.run(sql, params, function (err) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
     res.status(201).json({
-      message: 'Proyecto de mural creado con éxito',
+      message: 'Presupuesto creado con éxito',
       data: {
         id: this.lastID,
-        titulo,
         cliente,
-        ubicacion,
-        estado: estado || 'Planificación',
-        presupuesto
+        superficie_m2,
+        altura_m,
+        tipo_mural,
+        fecha_estimada: fechaFormateada,
+        coste_total
       }
-    });
-  });
-});
-
-// 4. ACTUALIZAR UN PROYECTO (UPDATE)
-app.put('/api/proyectos/:id', (req, res) => {
-  const { titulo, cliente, ubicacion, estado, presupuesto } = req.body;
-  const { id } = req.params;
-
-  const sql = `
-    UPDATE proyectos 
-    SET titulo = COALESCE(?, titulo),
-        cliente = COALESCE(?, cliente),
-        ubicacion = COALESCE(?, ubicacion),
-        estado = COALESCE(?, estado),
-        presupuesto = COALESCE(?, presupuesto)
-    WHERE id = ?
-  `;
-  const params = [titulo, cliente, ubicacion, estado, presupuesto, id];
-
-  db.run(sql, params, function (err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (this.changes === 0) {
-      return res.status(404).json({ error: 'Proyecto no encontrado para actualizar' });
-    }
-    res.json({
-      message: `Proyecto ID ${id} actualizado correctamente`,
-      changes: this.changes
-    });
-  });
-});
-
-// 5. ELIMINAR UN PROYECTO (DELETE)
-app.delete('/api/proyectos/:id', (req, res) => {
-  const { id } = req.params;
-  const sql = 'DELETE FROM proyectos WHERE id = ?';
-
-  db.run(sql, [id], function (err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (this.changes === 0) {
-      return res.status(404).json({ error: 'Proyecto no encontrado para eliminar' });
-    }
-    res.json({
-      message: `Proyecto ID ${id} eliminado con éxito`
     });
   });
 });

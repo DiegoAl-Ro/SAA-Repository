@@ -48,14 +48,14 @@ body {
   color: var(--accent-cyan);
 }
 
-.navbar nav a {
+.nav nav a {
   color: var(--text-main);
   text-decoration: none;
   margin-left: 2rem;
   transition: color 0.3s;
 }
 
-.navbar nav a:hover {
+.nav nav a:hover {
   color: var(--accent-cyan);
 }
 
@@ -263,6 +263,140 @@ th {
   cursor: pointer;
   font-size: 1.1rem;
   margin-right: 0.5rem;
+}
+
+/* CALCULADORA DE PRESUPUESTO - TEMA NEÓN OSCURA */
+.calculator-section {
+  padding: 4rem 5%;
+  background-color: #0d0f17;
+}
+
+.calculator-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.calculator-form-card {
+  background-color: var(--bg-card);
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.calculator-results-card {
+  background-color: var(--bg-dark);
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  margin: 2rem 0;
+}
+
+.calculator-form label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.calculator-form input,
+.calculator-form select {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: #fff;
+  outline: none;
+}
+
+.calculator-form button {
+  width: 100%;
+  padding: 0.75rem;
+  margin-right: 0.5rem;
+  background: linear-gradient(45deg, var(--accent-cyan), var(--accent-magenta));
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.calculator-form button:hover {
+  transform: translateY(-2px);
+}
+
+.calculator-results-card h3 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: var(--accent-cyan);
+}
+
+.result-item {
+  margin-bottom: 0.8rem;
+  padding: 0.75rem;
+  background-color: var(--bg-input);
+  border-radius: 4px;
+  border-left: 3px solid var(--accent-cyan);
+}
+
+.result-item span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.result-item strong {
+  color: var(--text-main);
+  font-size: 1rem;
+}
+
+.btn-calcular {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--accent-cyan);
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-calcular:hover {
+  transform: translateY(-2px);
+}
+
+.btn-enviar {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--accent-magenta);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-enviar:hover {
+  transform: translateY(-2px);
+}
+
+.calculator-form label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .calculator-container {
+    grid-template-columns: 1fr;
+  }
+
+  .crud-container {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* FOOTER */

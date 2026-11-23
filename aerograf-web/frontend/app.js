@@ -1,4 +1,5 @@
 const API_URL = 'http://localhost:3000/api/proyectos';
+const BUDGET_API_URL = 'http://localhost:3000/api/presupuestos';
 
 // Elementos del DOM
 const proyectoForm = document.getElementById('proyecto-form');
@@ -12,12 +13,20 @@ const tablaBody = document.getElementById('tabla-proyectos-body');
 const formTitle = document.getElementById('form-title');
 const btnSubmit = document.getElementById('btn-submit');
 const btnCancel = document.getElementById('btn-cancel');
+const calculatorForm = document.getElementById('calculator-form');
+const btnCalcular = document.getElementById('btn-calcular');
+const btnEnviar = document.getElementById('btn-enviar');
+const resultadosDiv = document.getElementById('resultados');
+const tablaPresupuestosBody = document.getElementById('tabla-presupuestos-body');
 
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', () => {
   cargarProyectos();
   proyectoForm.addEventListener('submit', guardarProyecto);
   btnCancel.addEventListener('click', resetFormulario);
+  cargarPresupuestos();
+  calculatorForm.addEventListener('submit', enviarCalculadora);
+  btnCalcular.addEventListener('click', calcularPresupuesto);
 });
 
 // 1. OBTENER Y MOSTRAR PROYECTOS (READ)
@@ -150,4 +159,155 @@ function getBadgeClass(estado) {
 
 function escapeQuotes(str) {
   return str.replace(/'/g, "\\'");
+}
+
+// --- CALCULADORA DE PRESUPUESTO ---
+function calcularPresupuesto() {
+  const cliente = document.getElementById('cliente-calc').value.trim();
+  const superficie = parseFloat(document.getElementById('superficie-calc').value);
+  const altura = parseFloat(document.getElementById('altura-calc').value);
+  const tipoMural = document.getElementById('tipo-mural-calc').value;
+
+  if (!superficie || superficie <= 0) {
+    resultadosDiv.innerHTML = '<p style="color:#ff007f;">Error: La superficie debe ser mayor a 0.</p>';
+    return;
+  }
+  if (!altura || altura <= 0) {
+    resultadosDiv.innerHTML = '<p style="color:#ff007f;">Error: La altura debe ser mayor a 0.</p>';
+    return;
+  }
+
+  // Precios base por tipo de mural
+  const preciosBase = {
+    estandar: 150,
+    complejo: 220,
+    ultra: 300
+  };
+
+  // Coste por m² ajustado por altura (mayor altura = mayor coste)
+  const factorAltura = 1 + (altura / 100);
+  const precioBase = preciosBase[tipoMural];
+  const costePorM2 = precioBase * factorAltura;
+  const costeTotal = superficie * costePorM2;
+
+  // Número de drones necesarios (cada drone puede pintar ~50 m² por vuelo)
+  const dronesNecesarios = Math.ceil(superficie / 50);
+
+  // Tiempo estimado de pintado (horas): 0.5h por cada 10 m², ajustado por altura
+  const tiempoHoras = Math.ceil((superficie / 10) * (1 + altura / 50));
+
+  // Mostrar resultados
+  resultadosDiv.innerHTML = `
+    <div class="result-item">
+      <span>Coste Total Estimado:</span>
+      <strong>€${costeTotal.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</strong>
+    </div>
+    <div class="result-item">
+      <span>Drones Necesarios:</span>
+      <strong>${dronesNecesarios}</strong>
+    </div>
+    <div class="result-item">
+      <span>Tiempo Estimado de Pintado:</span>
+      <strong>${tiempoHoras} horas</strong>
+    </div>
+    <div class="result-item">
+      <span>Tipo de Mural:</span>
+      <strong>${tipoMural}</strong>
+    </div>
+  `;
+
+  // Guardar datos para enviar
+  calculatorForm.dataset.costeTotal = costeTotal;
+  calculatorForm.dataset.superficie = superficie;
+  calculatorForm.dataset.altura = altura;
+  calculatorForm.dataset.tipoMural = tipoMural;
+  calculatorForm.dataset.cliente = cliente;
+
+  // Mostrar botón de enviar
+  btnEnviar.classList.remove('hidden');
+}
+
+function enviarCalculadora(e) {
+  e.preventDefault();
+
+  const cliente = document.getElementById('cliente-calc').value.trim();
+  const superficie = parseFloat(document.getElementById('superficie-calc').value);
+  const altura = parseFloat(document.getElementById('altura-calc').value);
+  const tipoMural = document.getElementById('tipo-mural-calc').value;
+  const costeTotal = parseFloat(calculatorForm.dataset.costeTotal);
+
+  // Obtener fecha actual en zona Europa/Madrid
+  const ahora = new Date();
+  const year = ahora.getFullYear();
+  const month = String(ahora.getMonth() + 1).padStart(2, '0');
+  const day = String(ahora.getDate()).padStart(2, '0');
+  const hour = String(ahora.getHours()).padStart(2, '0');
+  const minute = String(ahora.getMinutes()).padStart(2, '0');
+  const fechaMadrid = `${year}-${month}-${day}T${hour}:${minute}`;
+
+  const presupuestoData = {
+    cliente: cliente || 'Sin cliente',
+    superficie_m2: superficie,
+    altura_m: altura,
+    tipo_mural: tipoMural,
+    fecha_estimada: fechaMadrid,
+    coste_total: costeTotal
+  };
+
+  fetch(BUDGET_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(presupuestoData)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Error al enviar presupuesto');
+    }
+    return response.json();
+  })
+  .then(data => {
+    alert(`Presupuesto guardado con éxito. ID: ${data.data.id}`);
+    calculatorForm.reset();
+    resultadosDiv.innerHTML = '<p>Introduce los datos y haz clic en "Calcular"</p>';
+    btnEnviar.classList.add('hidden');
+    cargarPresupuestos();
+  })
+  .catch(error => {
+    alert('Error al guardar el presupuesto.');
+    console.error(error);
+  });
+}
+
+async function cargarPresupuestos() {
+  try {
+    const response = await fetch(BUDGET_API_URL);
+    const result = await response.json();
+    renderTablaPresupuestos(result.data);
+  } catch (error) {
+    console.error('Error al cargar presupuestos:', error);
+  }
+}
+
+function renderTablaPresupuestos(presupuestos) {
+  if (!tablaPresupuestosBody) return;
+
+  tablaPresupuestosBody.innerHTML = '';
+
+  if (!presupuestos || presupuestos.length === 0) {
+    tablaPresupuestosBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No hay presupuestos registrados aún.</td></tr>`;
+    return;
+  }
+
+  presupuestos.forEach((p) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>#${p.id}</td>
+      <td>${p.cliente}</td>
+      <td>${Number(p.superficie_m2).toLocaleString('es-ES')} m²</td>
+      <td>${Number(p.altura_m)} m</td>
+      <td>${p.tipo_mural}</td>
+      <td>€${Number(p.coste_total).toLocaleString('es-ES', { minimumFractionDigits: 2 })}</td>
+    `;
+    tablaPresupuestosBody.appendChild(tr);
+  });
 }
