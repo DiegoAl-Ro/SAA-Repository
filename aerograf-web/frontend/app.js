@@ -19,8 +19,54 @@ const btnEnviar = document.getElementById('btn-enviar');
 const resultadosDiv = document.getElementById('resultados');
 const tablaPresupuestosBody = document.getElementById('tabla-presupuestos-body');
 
+// --- GESTIÓN DE TEMA (MODO CLARO / OSCURO) ---
+const THEME_STORAGE_KEY = 'aerograff-theme';
+const themeToggleBtn = document.getElementById('theme-toggle');
+
+// Resolver el tema: localStorage > prefers-color-scheme > dark por defecto
+function resolveInitialTheme() {
+  let storedTheme = null;
+  try {
+    storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  } catch (e) {
+    // localStorage no disponible (navegación privada, etc.)
+    storedTheme = null;
+  }
+  if (storedTheme === 'light' || storedTheme === 'dark') {
+    return storedTheme;
+  }
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    return 'light';
+  }
+  return 'dark';
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  if (themeToggleBtn) {
+    themeToggleBtn.textContent = theme === 'dark' ? '🌙' : '☀️';
+  }
+}
+
+function persistTheme(theme) {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch (e) {
+    // Ignorar fallos de almacenamiento
+  }
+}
+
 // Inicializar la aplicación
 document.addEventListener('DOMContentLoaded', () => {
+  const initialTheme = resolveInitialTheme();
+  applyTheme(initialTheme);
+  themeToggleBtn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    persistTheme(next);
+  });
+
   cargarProyectos();
   proyectoForm.addEventListener('submit', guardarProyecto);
   btnCancel.addEventListener('click', resetFormulario);
