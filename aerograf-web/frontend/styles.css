@@ -6,6 +6,10 @@
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --bg-dark: #0a0b10;
   --bg-card: #121520;
@@ -16,6 +20,13 @@
   --text-muted: #8892b0;
   --border-color: #23293e;
   --bg-navbar: rgba(10, 11, 16, 0.9);
+  --nav-link: #ffffff;
+  --nav-link-hover: #00f0ff;
+  --btn-secondary-text: #00f2fe;
+  --btn-secondary-bg: rgba(0, 242, 254, 0.08);
+  --btn-secondary-hover-bg: rgba(0, 242, 254, 0.18);
+  --btn-secondary-glow: rgba(0, 242, 254, 0.35);
+  --btn-secondary-focus: #00f2fe;
   --text-heading: #ffffff;
   --bg-hero-center: #1b2238;
 }
@@ -28,6 +39,13 @@
   --text-muted: #5a6478;
   --border-color: #d8dde6;
   --bg-navbar: rgba(255, 255, 255, 0.9);
+  --nav-link: #101828;
+  --nav-link-hover: #006b78;
+  --btn-secondary-text: #005f6b;
+  --btn-secondary-bg: rgba(0, 95, 107, 0.06);
+  --btn-secondary-hover-bg: rgba(0, 95, 107, 0.14);
+  --btn-secondary-glow: rgba(0, 95, 107, 0.22);
+  --btn-secondary-focus: #006b78;
   --text-heading: #1a1d29;
   --bg-hero-center: #dbe4f0;
 }
@@ -63,15 +81,23 @@ body {
   color: var(--accent-cyan);
 }
 
-.nav nav a {
-  color: var(--text-main);
+nav a {
+  color: var(--nav-link);
   text-decoration: none;
   margin-left: 2rem;
+  font-weight: 600;
   transition: color 0.3s;
 }
 
-.nav nav a:hover {
-  color: var(--accent-cyan);
+nav a:hover,
+nav a:focus-visible {
+  color: var(--nav-link-hover);
+}
+
+nav a:focus-visible {
+  outline: 2px solid var(--nav-link-hover);
+  outline-offset: 4px;
+  border-radius: 2px;
 }
 
 /* THEME TOGGLE */
@@ -131,6 +157,33 @@ body {
 
 .btn-primary:hover {
   transform: translateY(-2px);
+}
+
+.btn-secondary {
+  display: inline-block;
+  padding: 0.8rem 2rem;
+  background: var(--btn-secondary-bg);
+  border: 1px solid #00f2fe;
+  color: var(--btn-secondary-text);
+  text-decoration: none;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 1.6;
+  border-radius: 4px;
+  transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus-visible {
+  background-color: var(--btn-secondary-hover-bg);
+  box-shadow: 0 0 14px var(--btn-secondary-glow);
+  transform: translateY(-2px);
+}
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--btn-secondary-focus);
+  outline-offset: 3px;
 }
 
 /* SERVICIOS */

@@ -1,5 +1,7 @@
-const API_URL = 'http://localhost:3000/api/proyectos';
-const BUDGET_API_URL = 'http://localhost:3000/api/presupuestos';
+const usaApiLocalExterna = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '3000';
+const API_BASE_URL = usaApiLocalExterna ? 'http://localhost:3000' : '';
+const API_URL = `${API_BASE_URL}/api/proyectos`;
+const BUDGET_API_URL = `${API_BASE_URL}/api/presupuestos`;
 
 // Elementos del DOM
 const proyectoForm = document.getElementById('proyecto-form');
@@ -72,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnCancel.addEventListener('click', resetFormulario);
   cargarPresupuestos();
   calculatorForm.addEventListener('submit', enviarCalculadora);
+  btnEnviar.addEventListener('click', enviarCalculadora);
   btnCalcular.addEventListener('click', calcularPresupuesto);
 });
 
